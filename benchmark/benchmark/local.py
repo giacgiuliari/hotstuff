@@ -34,6 +34,13 @@ class LocalBench:
         except subprocess.SubprocessError as e:
             raise BenchError('Failed to kill testbed', e)
 
+    def _kill_node_by_id(self,id):
+        try:
+            cmd = CommandMaker.kill_node(id).split()
+            subprocess.run(cmd, stderr=subprocess.DEVNULL)
+        except subprocess.SubprocessError as e:
+            raise BenchError('Failed to kill testbed', e)
+
     def run(self, debug=False):
         assert isinstance(debug, bool)
         Print.heading('Starting local benchmark')
@@ -89,6 +96,14 @@ class LocalBench:
                 )
                 self._background_run(cmd, log_file)
 
+            # Extract crash pattern:
+            delays = []
+            if len(self.crash_pattern)>0:
+                last_t = self.crash_pattern[0][1]
+                for i, t in self.crash_pattern:
+                     delays.append((i,t-last_t))
+                     last_t=t
+
             # Run the nodes.
             dbs = [PathMaker.db_path(i) for i in range(nodes)]
             node_logs = [PathMaker.node_log_file(i) for i in range(nodes)]
@@ -105,6 +120,11 @@ class LocalBench:
             # Wait for the nodes to synchronize
             Print.info('Waiting for the nodes to synchronize...')
             sleep(2 * self.node_parameters.timeout_delay / 1000)
+
+            # Follow crash pattern:
+            for i, t in delays:
+                sleep(t)
+                self._kill_node_by_id(i)
 
             # Wait for all transactions to be processed.
             Print.info(f'Running benchmark ({self.duration} sec)...')
