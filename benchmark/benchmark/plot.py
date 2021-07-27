@@ -6,7 +6,7 @@ from glob import glob
 from benchmark.utils import PathMaker
 from benchmark.config import PlotParameters
 from benchmark.aggregate import LogAggregator
-
+import json
 
 class PlotError(Exception):
     pass
@@ -131,6 +131,18 @@ class Ploter:
         ploter._plot(x_label, y_label, ploter._tps, z_axis, 'tps')
 
     @classmethod
+    def plot_tps_interval(cls, file):
+        tps_interval = json.load(open(file))
+        times = tps_interval.keys()
+        commits = tps_interval.values()
+        plt.figure()
+        plt.plot(times,commits)
+        plt.xlabel('Time (seconds)')
+        plt.ylabel('Throughput (tx/s)')
+        for x in ['pdf', 'png']:
+            plt.savefig(PathMaker.plot_file('performance_under_faults',x), bbox_inches='tight')
+
+    @classmethod
     def plot(cls, params_dict):
         try:
             params = PlotParameters(params_dict)
@@ -143,7 +155,6 @@ class Ploter:
         # Load the aggregated log files.
         robustness_files, latency_files, tps_files = [], [], []
         tx_size = params.tx_size
-        
         for f in params.faults:
             for n in params.nodes:
                 robustness_files += glob(
@@ -156,8 +167,8 @@ class Ploter:
                 tps_files += glob(
                     PathMaker.agg_file('x', 'any', tx_size, f, l)
                 )
-
         # Make the plots.
         cls.plot_robustness(robustness_files)
         cls.plot_latency(latency_files)
         cls.plot_tps(tps_files)
+        cls.plot_tps_interval('tps_intervals.log')
