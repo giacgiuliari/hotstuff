@@ -16,9 +16,9 @@ class AWSError(Exception):
 
 
 class InstanceManager:
-    INSTANCE_NAME = 'hotstuff-node'
-    SECURITY_GROUP_NAME = 'hotstuff'
-    VPC_NAME = 'hotstuff'
+    INSTANCE_NAME = 'hotstuff-node-noscion'
+    SECURITY_GROUP_NAME = 'hotstuff-noscion'
+    VPC_NAME = 'hotstuff-noscion'
 
     def __init__(self, settings):
         assert isinstance(settings, Settings)
