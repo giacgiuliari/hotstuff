@@ -79,6 +79,17 @@ sudo ip6tables -X
 
     @staticmethod
     def add_loss(rate, ports):
-        # TODO add ability to change port
-        add_loss_cmd = f"sudo iptables -t mangle -A PREROUTING -p tcp --dport {ports} -m statistic --mode random --probability {rate} -j DROP"
+        if "," in ports:
+            # A set of ports
+            port_selection = "--match multiport {negation}--dports {ports}"
+        else:
+            # A single port or a port range
+            port_selection = "{negation}--dport {ports}"
+        if "!" in ports:
+            negation = "! "
+        else:
+            negation = ""
+        ports = ports.replace("!", "")
+        port_selection = port_selection.format(ports=ports, negation=negation)
+        add_loss_cmd = f"sudo iptables -t mangle -A PREROUTING -p tcp {port_selection} -m statistic --mode random --probability {rate} -j DROP"
         return add_loss_cmd

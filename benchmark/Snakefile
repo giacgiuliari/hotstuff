@@ -23,7 +23,7 @@ rule all:
     output:
         f"{out_dir}/loss_degradation.png"
     run:
-        shell("python experiments/proc/plot_results.py {input} {output} " + f"\"Target port(s): {config['ports']}\"")
+        shell("python3 experiments/proc/plot_results.py {input} {output} " + f"\"Target port(s): {config['ports']}\"")
     
 
 rule aggregate:
