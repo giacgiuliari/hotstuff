@@ -1,0 +1,56 @@
+import os 
+import datetime
+import pathlib
+import numpy as np
+
+CONFIG = "experiments/config.yml"
+RESULTS_DIR = "experiments/results"
+
+configfile: CONFIG
+
+if 'step' in config['loss_rates']:
+    loss_rates = np.arange(config['loss_rates']['min'], config['loss_rates']['max'], config['loss_rates']['step']).round(4)
+else:
+    loss_rates = np.linspace(config['loss_rates']['min'], config['loss_rates']['max'], config['loss_rates']['num']).round(4)
+
+loss_str = '-'.join([str(x) for x in loss_rates])
+out_dir = f"{RESULTS_DIR}/experiment-ports-{config['ports']}-runs-{str(config['runs'])}-loss-{loss_str}"
+
+
+rule all:
+    input:
+        f"{out_dir}/result.txt"
+    output:
+        f"{out_dir}/loss_degradation.png"
+    run:
+        shell("python experiments/proc/plot_results.py {input} {output} " + f"\"Target port(s): {config['ports']}\"")
+    
+
+rule aggregate:
+    input:
+        expand(out_dir+"/aggregate/result-{rate}-loss.txt", rate=loss_rates)
+    output:
+        f"{out_dir}/result.txt"
+    shell:
+        "echo {input} | xargs cat > {output}"
+
+    
+rule loss_results:
+    input:
+        "{out_dir}/runs/run-{rate}-loss.txt"
+    output:
+        "{out_dir}/aggregate/result-{rate}-loss.txt"
+    shell:
+        "python3 ./experiments/proc/filter_result.py {input} {wildcards.rate} > {output}"
+    
+
+rule loss_run:
+    output:
+        "{out_dir}/runs/run-{rate}-loss.txt"
+    run:
+        shell("fab remove-loss")
+        shell("fab add-loss  --rate={wildcards.rate} --ports=" + config['ports'])
+        shell("fab remote --runs="+str(config['runs'])+" --duration="+str(config['duration']))
+        shell("fab remove-loss")
+        shell("mv ./results/bench-6-5000-512-0.txt {output}")
+

@@ -1,0 +1,14 @@
+# 2021 Giacomo Giuliari
+# WARNING: changing this configuration file while Snakemake is running could 
+#   cause the parameter changes mid-experiment!!!
+
+loss_rates:
+    min: 0.0
+    max: 0.01  
+    #step: 0.0025  # Uses np.arange
+    num: 5  # Uses np.linspace
+runs: 3  # Number of runs for each configuration
+ports: "8000" # Port range for the loss. For 'all' ports "1024:65535"
+              # Recall that the ports are: 
+              # "consensus": 8000, "mempool": 7000, "front": 6000
+duration: 60  # seconds
