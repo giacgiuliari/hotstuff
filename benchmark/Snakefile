@@ -14,7 +14,7 @@ else:
     loss_rates = np.linspace(config['loss_rates']['min'], config['loss_rates']['max'], config['loss_rates']['num']).round(4)
 
 loss_str = '-'.join([str(x) for x in loss_rates])
-out_dir = f"{RESULTS_DIR}/experiment-ports-{config['ports']}-runs-{str(config['runs'])}-loss-{loss_str}"
+out_dir = f"{RESULTS_DIR}/experiment-sports-{config['sports']}-dports-{config['dports']}-runs-{str(config['runs'])}-loss-{loss_str}"
 
 
 rule all:
@@ -23,7 +23,7 @@ rule all:
     output:
         f"{out_dir}/loss_degradation.png"
     run:
-        shell("python3 experiments/proc/plot_results.py {input} {output} " + f"\"Target port(s): {config['ports']}\"")
+        shell("python3 experiments/proc/plot_results.py {input} {output} " + f"\"Target port(s): sports {config['sports']}, dports {config['dports']}\"")
     
 
 rule aggregate:
@@ -48,8 +48,10 @@ rule loss_run:
     output:
         "{out_dir}/runs/run-{rate}-loss.txt"
     run:
+        # Clear the results folder, if other runs did not complete
+        shell("rm ./results/* || true")
         shell("fab remove-loss")
-        shell("fab add-loss  --rate={wildcards.rate} --ports=" + config['ports'])
+        shell(f"fab add-loss  --rate={wildcards.rate} --sports={config['sports']} --dports={config['dports']}")
         shell("fab remote --runs="+str(config['runs'])+" --duration="+str(config['duration']))
         shell("fab remove-loss")
         shell("mv ./results/bench-6-5000-512-0.txt {output}")

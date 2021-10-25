@@ -158,9 +158,9 @@ def logs(ctx):
 
 
 @task
-def add_loss(ctx, rate=0.0, ports="8000"):
+def add_loss(ctx, rate=0.0, sports="", dports=""):
     try:
-        Bench(ctx).add_loss(rate, ports)
+        Bench(ctx).add_loss(rate, sports, dports)
     except BenchError as e:
         Print.error(e)
 

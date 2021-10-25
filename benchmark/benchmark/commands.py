@@ -78,18 +78,37 @@ sudo ip6tables -X
         return remove_loss_cmd
 
     @staticmethod
-    def add_loss(rate, ports):
-        if "," in ports:
-            # A set of ports
-            port_selection = "--match multiport {negation}--dports {ports}"
-        else:
-            # A single port or a port range
-            port_selection = "{negation}--dport {ports}"
-        if "!" in ports:
-            negation = "! "
-        else:
-            negation = ""
-        ports = ports.replace("!", "")
-        port_selection = port_selection.format(ports=ports, negation=negation)
-        add_loss_cmd = f"sudo iptables -t mangle -A PREROUTING -p tcp {port_selection} -m statistic --mode random --probability {rate} -j DROP"
-        return add_loss_cmd
+    def add_loss(rate, sports=None, dports=None):
+        assert sports or dports
+
+        def _create_port_matching_rule(ports, port_type, chain):
+            assert port_type in ["sport", "dport"]
+            if "," in ports:
+                # A set of ports
+                port_selection = "--match multiport {negation}--{port_type}s {ports}"
+            else:
+                # A single port or a port range
+                port_selection = "{negation}--{port_type} {ports}"
+            if "!" in ports:
+                negation = "! "
+            else:
+                negation = ""
+            ports = ports.replace("!", "")
+            port_selection = port_selection.format(
+                ports=ports, negation=negation, port_type=port_type
+            )
+            add_loss_cmd = f"sudo iptables -t mangle -A {chain} -p tcp {port_selection} -m statistic --mode random --probability {rate} -j DROP"
+            return add_loss_cmd
+
+        add_loss_rule = ""
+        if sports:
+            sport_rule = _create_port_matching_rule(
+                ports=sports, port_type="sport", chain="OUTPUT"
+            )
+            add_loss_rule += sport_rule + "\n"
+        if dports:
+            dport_rule = _create_port_matching_rule(
+                ports=dports, port_type="dport", chain="PREROUTING"
+            )
+            add_loss_rule += dport_rule
+        return add_loss_rule
