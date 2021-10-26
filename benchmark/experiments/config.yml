@@ -7,10 +7,11 @@ loss_rates:
     max: 0.01 
     #step: 0.0025  # Uses np.arange
     num: 5  # Uses np.linspace
-runs: 3  # Number of runs for each configuration
+runs: 2  # Number of runs for each configuration
 sports: "7000" # Source port range for the loss. For 'all' ports "1024:65535"
 dports: "7000" # Destination port range for the loss. For 'all' ports "1024:65535"
                # A "!" signifies "all exept the specified ports"
                # Recall that the important ports are: 
                # "consensus": 8000, "mempool": 7000, "front": 6000
+ips: "13.48.5.62"  # None or comma-separated list of IP addresses
 duration: 60  # seconds
