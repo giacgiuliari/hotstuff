@@ -1,6 +1,5 @@
 import os 
 import datetime
-import pathlib
 import numpy as np
 
 CONFIG = "experiments/config.yml"
@@ -21,9 +20,11 @@ rule all:
     input:
         f"{out_dir}/result.txt"
     output:
-        f"{out_dir}/loss_degradation.png"
+        f"{out_dir}/loss_degradation.png",
+        f"{out_dir}/latency_throughput.png"
     run:
-        shell("python3 experiments/proc/plot_results.py {input} {output} " + f"\"Target port(s): sports {config['sports']}, dports {config['dports']}\"")
+        shell("python3 experiments/proc/plot_results.py {input} {output[0]} " + f"\"Target port(s): sports {config['sports']}, dports {config['dports']}\"")
+        shell("python3 experiments/proc/plot_latency_throughput.py {input} {output[1]} " + f"\"Target port(s): sports {config['sports']}, dports {config['dports']}\"")
     
 
 rule aggregate:
