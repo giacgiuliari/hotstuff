@@ -1,7 +1,7 @@
 {
     "key": {
-        "name": "nicola-aws",
-        "path": "/Users/nic/.ssh/aws"
+        "name": "aws-giacomog",
+        "path": "/home/giacomo/.ssh/aws_giacomog"
     },
     "ports": {
         "consensus": 8000,
