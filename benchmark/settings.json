@@ -10,7 +10,7 @@
     },
     "repo": {
         "name": "hotstuff",
-        "url": "https://github.com/asonnino/hotstuff.git",
+        "url": "https://github.com/giacgiuliari/hotstuff.git",
         "branch": "main"
     },
     "instances": {
