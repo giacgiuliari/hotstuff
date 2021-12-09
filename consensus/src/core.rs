@@ -215,6 +215,7 @@ impl Core {
 
             // Make a new block if we are the next leader.
             if self.name == self.leader_elector.get_leader(self.round) {
+                info!("We are currently the leader!");
                 self.generate_proposal(None).await?;
             }
         }
@@ -253,6 +254,7 @@ impl Core {
 
             // Make a new block if we are the next leader.
             if self.name == self.leader_elector.get_leader(self.round) {
+                info!("We are currently the leader!");
                 self.generate_proposal(Some(tc)).await?;
             }
         }
@@ -438,6 +440,7 @@ impl Core {
     async fn handle_tc(&mut self, tc: TC) -> ConsensusResult<()> {
         self.advance_round(tc.round).await;
         if self.name == self.leader_elector.get_leader(self.round) {
+            info!("We are currently the leader!");
             self.generate_proposal(Some(tc)).await?;
         }
         Ok(())
@@ -448,6 +451,7 @@ impl Core {
         // Also, schedule a timer in case we don't hear from the leader.
         self.timer.reset();
         if self.name == self.leader_elector.get_leader(self.round) {
+            info!("We are currently the leader!");
             self.generate_proposal(None)
                 .await
                 .expect("Failed to send the first block");

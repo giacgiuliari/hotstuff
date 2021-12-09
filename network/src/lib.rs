@@ -112,7 +112,7 @@ impl<Message: 'static + Send + DeserializeOwned + Debug> NetReceiver<Message> {
                     continue;
                 }
             };
-            info!("Incoming connection established with {}", peer);
+            //info!("Incoming connection established with {}", peer);
             Self::spawn_worker(socket, peer, self.deliver.clone()).await;
         }
     }
