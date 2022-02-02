@@ -29,6 +29,7 @@ impl Consensus {
         rx_core: Receiver<ConsensusMessage>,
         tx_consensus_mempool: Sender<ConsensusMempoolMessage>,
         tx_commit: Sender<Block>,
+        is_bad: bool,
     ) -> ConsensusResult<()> {
         // NOTE: The following log entries are used to compute performance.
         info!(
@@ -80,6 +81,7 @@ impl Consensus {
             /* network_channel */ tx_network.clone(),
             /* core_channel */ tx_core,
             parameters.sync_retry_delay,
+            is_bad,
         )
         .await;
 
@@ -95,6 +97,7 @@ impl Consensus {
             /* core_channel */ rx_core,
             /* network_channel */ tx_network,
             /* commit_channel */ tx_commit,
+            is_bad,
         );
         tokio::spawn(async move {
             core.run().await;

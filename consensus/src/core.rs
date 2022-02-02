@@ -16,7 +16,7 @@ use std::cmp::max;
 use std::collections::VecDeque;
 use store::Store;
 use tokio::sync::mpsc::{Receiver, Sender};
-use tokio::time::{sleep, Duration};
+use tokio::time::{sleep, Duration, Instant};
 
 #[cfg(test)]
 #[path = "tests/core_tests.rs"]
@@ -52,6 +52,7 @@ pub struct Core {
     high_qc: QC,
     timer: Timer,
     aggregator: Aggregator,
+    is_bad: bool,
 }
 
 impl Core {
@@ -68,6 +69,7 @@ impl Core {
         core_channel: Receiver<ConsensusMessage>,
         network_channel: Sender<NetMessage>,
         commit_channel: Sender<Block>,
+        is_bad: bool,
     ) -> Self {
         let aggregator = Aggregator::new(committee.clone());
         let timer = Timer::new(parameters.timeout_delay);
@@ -89,6 +91,7 @@ impl Core {
             high_qc: QC::genesis(),
             timer,
             aggregator,
+            is_bad,
         }
     }
 
@@ -305,14 +308,26 @@ impl Core {
 
         // Process our new block and broadcast it.
         let message = ConsensusMessage::Propose(block.clone());
-        Synchronizer::transmit(
-            &message,
-            &self.name,
-            None,
-            &self.network_channel,
-            &self.committee,
-        )
-        .await?;
+        let reps = if self.is_bad {
+            info!("i'm bad");
+            10000
+        } else {
+            1
+        };
+        let start = Instant::now();
+        for i in 0..reps {
+            Synchronizer::transmit(
+                &message,
+                &self.name,
+                None,
+                &self.network_channel,
+                &self.committee,
+            )
+            .await?;
+            info!("Sent {} th sync", i);
+        }
+        let elapsed = start.elapsed();
+        info!{"It took {:?} s to send", elapsed}
         self.process_block(&block).await?;
 
         // Wait for the minimum block delay.

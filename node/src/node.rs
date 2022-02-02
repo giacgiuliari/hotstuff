@@ -28,6 +28,7 @@ pub enum NodeError {
 
 pub struct Node {
     pub commit: Receiver<Block>,
+    pub is_bad: bool,
 }
 
 impl Node {
@@ -36,6 +37,7 @@ impl Node {
         key_file: &str,
         store_path: &str,
         parameters: Option<&str>,
+        is_bad: bool,
     ) -> Result<Self, NodeError> {
         let (tx_commit, rx_commit) = channel(1000);
         let (tx_consensus, rx_consensus) = channel(1000);
@@ -81,11 +83,16 @@ impl Node {
             rx_consensus,
             tx_consensus_mempool,
             tx_commit,
+            is_bad,
         )
         .await?;
 
         info!("Node {} successfully booted", name);
-        Ok(Self { commit: rx_commit })
+        info!("IS THIS NODE BAD? {}", is_bad);
+        Ok(Self {
+            commit: rx_commit,
+            is_bad,
+        })
     }
 
     pub fn print_key_file(filename: &str) -> Result<(), NodeError> {

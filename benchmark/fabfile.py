@@ -152,7 +152,10 @@ def kill(ctx):
 def logs(ctx):
     """ Print a summary of the logs """
     try:
-        print(LogParser.process("./logs").result())
+        parser = LogParser.process("./logs")
+        print(parser.result())
+        parser.write_out_commit_time("./commit_time_and_size.txt")
+        parser.write_out_proposal_time("./proposal_time.txt")
     except ParseError as e:
         Print.error(BenchError("Failed to parse logs", e))
 

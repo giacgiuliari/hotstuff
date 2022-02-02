@@ -34,6 +34,7 @@ impl Synchronizer {
         network_channel: Sender<NetMessage>,
         core_channel: Sender<ConsensusMessage>,
         sync_retry_delay: u64,
+        is_bad: bool,
     ) -> Self {
         let (tx_inner, mut rx_inner): (_, Receiver<Block>) = channel(1000);
 

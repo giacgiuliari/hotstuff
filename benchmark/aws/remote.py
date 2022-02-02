@@ -57,7 +57,7 @@ class Bench:
                 raise ExecutionError(output.stderr)
 
     def install(self):
-        Print.info("Installing rust and cloning the repo...")
+        Print.info(f"Installing rust and cloning the repo {self.settings.repo_url}...")
         cmd = [
             "sudo apt-get update",
             "sudo apt-get -y upgrade",
@@ -224,6 +224,7 @@ class Bench:
         key_files = [PathMaker.key_file(i) for i in range(len(hosts))]
         dbs = [PathMaker.db_path(i) for i in range(len(hosts))]
         node_logs = [PathMaker.node_log_file(i) for i in range(len(hosts))]
+        idx = 0
         for host, key_file, db, log_file in zip(hosts, key_files, dbs, node_logs):
             cmd = CommandMaker.run_node(
                 key_file,
@@ -231,8 +232,10 @@ class Bench:
                 db,
                 PathMaker.parameters_file(),
                 debug=debug,
+                is_bad=idx == 0,
             )
             self._background_run(host, cmd, log_file)
+            idx += 1
 
         # Wait for the nodes to synchronize
         Print.info("Waiting for the nodes to synchronize...")
@@ -253,6 +256,10 @@ class Bench:
         progress = progress_bar(hosts, prefix="Downloading logs:")
         for i, host in enumerate(progress):
             c = Connection(host, user="ubuntu", connect_kwargs=self.connect)
+            # Remove network errors
+            cmd = "sed -i '/Network error/d' logs/*"
+            c.run(cmd, hide=True)
+            # Retrieve logs
             c.get(PathMaker.node_log_file(i), local=PathMaker.node_log_file(i))
             c.get(PathMaker.client_log_file(i), local=PathMaker.client_log_file(i))
 

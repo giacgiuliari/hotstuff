@@ -4,7 +4,7 @@ mod node;
 use crate::config::Export as _;
 use crate::config::{Committee, Secret};
 use crate::node::Node;
-use clap::{crate_name, crate_version, App, AppSettings, SubCommand};
+use clap::{crate_name, crate_version, App, AppSettings, Arg, SubCommand};
 use consensus::Committee as ConsensusCommittee;
 use env_logger::Env;
 use futures::future::join_all;
@@ -30,7 +30,15 @@ async fn main() {
                 .args_from_usage("--keys=<FILE> 'The file containing the node keys'")
                 .args_from_usage("--committee=<FILE> 'The file containing committee information'")
                 .args_from_usage("--parameters=[FILE] 'The file containing the node parameters'")
-                .args_from_usage("--store=<PATH> 'The path where to create the data store'"),
+                .args_from_usage("--store=<PATH> 'The path where to create the data store'")
+                .arg(
+                    Arg::with_name("bad")
+                        .short("b")
+                        .long("bad")
+                        .required(false)
+                        .takes_value(false)
+                        .help("Set the node bad"),
+                ),
         )
         .subcommand(
             SubCommand::with_name("deploy")
@@ -64,7 +72,16 @@ async fn main() {
             let committee_file = subm.value_of("committee").unwrap();
             let parameters_file = subm.value_of("parameters");
             let store_path = subm.value_of("store").unwrap();
-            match Node::new(committee_file, key_file, store_path, parameters_file).await {
+            let is_bad = subm.is_present("bad");
+            match Node::new(
+                committee_file,
+                key_file,
+                store_path,
+                parameters_file,
+                is_bad,
+            )
+            .await
+            {
                 Ok(mut node) => {
                     tokio::spawn(async move {
                         node.analyze_block().await;
@@ -92,6 +109,7 @@ async fn main() {
 }
 
 fn deploy_testbed(nodes: usize) -> Result<Vec<JoinHandle<()>>, Box<dyn std::error::Error>> {
+    println!("DEPLOYING TESTBED!!");
     let keys: Vec<_> = (0..nodes).map(|_| Secret::new()).collect();
 
     // Print the committee file.
@@ -139,8 +157,10 @@ fn deploy_testbed(nodes: usize) -> Result<Vec<JoinHandle<()>>, Box<dyn std::erro
             let store_path = format!("db_{}", i);
             let _ = fs::remove_dir_all(&store_path);
 
+            let is_bad = i == 0; // The first node is malicious
+            println!("{}", is_bad);
             Ok(tokio::spawn(async move {
-                match Node::new(committee_file, &key_file, &store_path, None).await {
+                match Node::new(committee_file, &key_file, &store_path, None, is_bad).await {
                     Ok(mut node) => {
                         // Sink the commit channel.
                         while node.commit.recv().await.is_some() {}

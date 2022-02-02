@@ -92,14 +92,17 @@ class LocalBench:
             # Run the nodes.
             dbs = [PathMaker.db_path(i) for i in range(nodes)]
             node_logs = [PathMaker.node_log_file(i) for i in range(nodes)]
+            idx = 0
             for key_file, db, log_file in zip(key_files, dbs, node_logs):
                 cmd = CommandMaker.run_node(
                     key_file,
                     PathMaker.committee_file(),
                     db,
                     PathMaker.parameters_file(),
-                    debug=debug
+                    debug=debug,
+                    is_bad = idx == 0,
                 )
+                idx += 1
                 self._background_run(cmd, log_file)
 
             # Wait for the nodes to synchronize
