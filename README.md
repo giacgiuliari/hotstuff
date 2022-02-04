@@ -1,9 +1,8 @@
-> **Note to readers:** This branch implements a [2-chain variant of the HotStuff consensus protocol](https://arxiv.org/abs/2106.10362). You may be interested in the [3-chain branch](https://github.com/asonnino/hotstuff/tree/3-chain) that implements the classic HotStuff protocol.
+> **Note to readers:** This codebase is useful to get started with BFT consensus and as baseline when designing your own protocols. If you are looking for state-of-the-art BFT protocols, I recommend [Tusk](https://github.com/asonnino/narwhal) (asynchronous) and [Bullshark](https://github.com/asonnino/narwhal/tree/bullshark) (partially-synchronous) that provide superior performance, robustness, and scalability. 
 
 # HotStuff
 
-[![build status](https://img.shields.io/github/workflow/status/asonnino/hotstuff/Build/main?style=flat-square&logo=github)](https://github.com/asonnino/hotstuff/actions)
-[![test status](https://img.shields.io/github/workflow/status/asonnino/hotstuff/Tests/main?style=flat-square&logo=github&label=tests)](https://github.com/asonnino/hotstuff/actions)
+[![build status](https://img.shields.io/github/workflow/status/asonnino/hotstuff/Rust/main?style=flat-square&logo=github)](https://github.com/asonnino/hotstuff/actions)
 [![rustc](https://img.shields.io/badge/rustc-1.48+-blue?style=flat-square&logo=rust)](https://www.rust-lang.org)
 [![license](https://img.shields.io/badge/license-Apache-blue.svg?style=flat-square)](LICENSE)
 
@@ -27,25 +26,28 @@ This command may take a long time the first time you run it (compiling rust code
  SUMMARY:
 -----------------------------------------
  + CONFIG:
+ Faults: 0 nodes
  Committee size: 4 nodes
  Input rate: 1,000 tx/s
  Transaction size: 512 B
- Faults: 0 nodes
  Execution time: 20 s
 
- Consensus max payloads size: 500 B
- Consensus min block delay: 0 ms
- Mempool max payloads size: 15,000 B
- Mempool min block delay: 0 ms
+ Consensus timeout delay: 1,000 ms
+ Consensus sync retry delay: 10,000 ms
+ Mempool GC depth: 50 rounds
+ Mempool sync retry delay: 5,000 ms
+ Mempool sync retry nodes: 3 nodes
+ Mempool batch size: 15,000 B
+ Mempool max batch delay: 10 ms
 
  + RESULTS:
- Consensus TPS: 966 tx/s
- Consensus BPS: 494,627 B/s
- Consensus latency: 1 ms
+ Consensus TPS: 967 tx/s
+ Consensus BPS: 495,294 B/s
+ Consensus latency: 2 ms
 
- End-to-end TPS: 966 tx/s
- End-to-end BPS: 494,576 B/s
- End-to-end latency: 4 ms
+ End-to-end TPS: 960 tx/s
+ End-to-end BPS: 491,519 B/s
+ End-to-end latency: 9 ms
 -----------------------------------------
 ```
 
